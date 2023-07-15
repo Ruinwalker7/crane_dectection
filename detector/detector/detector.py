@@ -11,6 +11,9 @@ from interfaces.msg import Serial
 
 model = YOLO('/home/chen/Documents/crane/detector/model/best.pt')
 
+dic={7:1,11:2,13:3,14:4,19:5,21:6,22:7,25:8,
+       26:9,28:10,35:11,37:12,38:13,41:14,42:15,44:16,49:17,50:18,52:19,56:20}
+
 class ImageSubscriber(Node):
 
     def __init__(self):
@@ -54,7 +57,7 @@ class ImageSubscriber(Node):
         # print(cls)
         # c = torch.cat([xyxy,cls],dim=1)
         # c = c.sort(0,False)[0]
-        # print(c)
+        print(c)
         sendmsg = Serial()
         sendmsg.object1 = int(c[0][0])
         sendmsg.object2 = int(c[1][0])
@@ -62,7 +65,8 @@ class ImageSubscriber(Node):
         sendmsg.object4 = int(c[3][0])
         sendmsg.object5 = int(c[4][0])
         sendmsg.object6 = int(c[5][0])
-        sendmsg.type = 0
+        type = int(c[0][0])*32+int(c[1][0])*16+int(c[2][0])*8+int(c[3][0])*4+int(c[4][0])*2+int(c[5][0])
+        sendmsg.type =  dic[type]
         self.publisher_.publish(sendmsg)
 
         # for i in range(0,6):
