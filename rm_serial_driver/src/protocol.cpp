@@ -38,7 +38,7 @@ std::vector<rclcpp::SubscriptionBase::SharedPtr> ProtocolNormal::get_subscriptio
   rclcpp::Node * node)
 {
   return {node->create_subscription<interfaces::msg::Serial>(
-    "armor_solver/cmd_gimbal", rclcpp::SensorDataQoS(),
+    "/type", rclcpp::SensorDataQoS(),
     [this](const interfaces::msg::Serial::SharedPtr msg) { this->send(*msg); })};
 }
 

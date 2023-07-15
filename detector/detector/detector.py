@@ -7,6 +7,7 @@ import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from std_msgs.msg import String
 import torch
+from interfaces.msg import Serial
 
 model = YOLO('/home/chen/Documents/crane/detector/model/best.pt')
 
@@ -20,6 +21,11 @@ class ImageSubscriber(Node):
             self.imageCallback,1)
         self.subscriptions
         self.cvbridge = CvBridge()
+        self.publisher_ = self.create_publisher(
+            Serial,
+            'type',
+            1
+        )
 
     def imageCallback(self,msg):
         cv_img = self.cvbridge.imgmsg_to_cv2(msg, "bgr8")
@@ -32,11 +38,32 @@ class ImageSubscriber(Node):
         cls = results[0].boxes.cls
         if len(xyxy) != 6:
             return
+        sum = torch.sum(cls)
+        print(sum)
+        if sum != 3:
+            return
         cls=cls.reshape(len(cls),1)
-        c = torch.cat([xyxy,cls],dim=1)
-        c = c.sort(0,False)[0]
-        print(c)
-
+        x=xyxy[:,0:1]
+        # print(x)
+        # print(xyxy)
+        sorted = x.sort(0,False)[0]
+        indices = x.sort(0,False)[1]
+        # print(sorted)
+        # print(indices)
+        c=torch.gather(cls, 0, indices)
+        # print(cls)
+        # c = torch.cat([xyxy,cls],dim=1)
+        # c = c.sort(0,False)[0]
+        # print(c)
+        sendmsg = Serial()
+        sendmsg.object1 = int(c[0][0])
+        sendmsg.object2 = int(c[1][0])
+        sendmsg.object3 = int(c[2][0])
+        sendmsg.object4 = int(c[3][0])
+        sendmsg.object5 = int(c[4][0])
+        sendmsg.object6 = int(c[5][0])
+        sendmsg.type = 0
+        self.publisher_.publish(sendmsg)
 
         # for i in range(0,6):
         #     xyxy[i]=cls[i]
