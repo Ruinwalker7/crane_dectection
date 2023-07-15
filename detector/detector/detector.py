@@ -37,7 +37,7 @@ class ImageSubscriber(Node):
         c = c.sort(0,False)[0]
         print(c)
 
-        
+
         # for i in range(0,6):
         #     xyxy[i]=cls[i]
         # print(xyxy)
@@ -52,10 +52,8 @@ class ImageSubscriber(Node):
         # print(results[0])
 
 
-
 def main():
     rclpy.init()
-    # print('Hi from detector.')
     image_sub_ = ImageSubscriber()
     rclpy.spin(image_sub_)
 
