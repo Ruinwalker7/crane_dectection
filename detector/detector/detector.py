@@ -47,16 +47,9 @@ class ImageSubscriber(Node):
             return
         cls=cls.reshape(len(cls),1)
         x=xyxy[:,0:1]
-        # print(x)
-        # print(xyxy)
-        sorted = x.sort(0,False)[0]
+        # sorted = x.sort(0,False)[0]
         indices = x.sort(0,False)[1]
-        # print(sorted)
-        # print(indices)
         c=torch.gather(cls, 0, indices)
-        # print(cls)
-        # c = torch.cat([xyxy,cls],dim=1)
-        # c = c.sort(0,False)[0]
         print(c)
         sendmsg = Serial()
         sendmsg.object1 = int(c[0][0])
@@ -68,19 +61,6 @@ class ImageSubscriber(Node):
         type = int(c[0][0])*32+int(c[1][0])*16+int(c[2][0])*8+int(c[3][0])*4+int(c[4][0])*2+int(c[5][0])
         sendmsg.type =  dic[type]
         self.publisher_.publish(sendmsg)
-
-        # for i in range(0,6):
-        #     xyxy[i]=cls[i]
-        # print(xyxy)
-        # print(type(boxes))
-        # print(boxes)
-
-        # rect = torch.tensor()
-        # for box in boxes:
-        #     print(box.xyxy)
-        #     print(box.cls)
-        # print("--------------")
-        # print(results[0])
 
 
 def main():
