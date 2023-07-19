@@ -5,3 +5,4 @@ uint8 object4
 uint8 object5
 uint8 object6
 uint8 type
+uint8 more

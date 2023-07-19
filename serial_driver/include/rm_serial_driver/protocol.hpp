@@ -61,7 +61,7 @@ public:
   std::string get_error_message() override { return packet_tool_->get_error_message(); }
 
 private:
-  FixedPacketTool<9>::SharedPtr packet_tool_;
+  FixedPacketTool<10>::SharedPtr packet_tool_;
 };
 
 }  // namespace protocol

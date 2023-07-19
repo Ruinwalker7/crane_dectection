@@ -29,49 +29,46 @@ class ImageSubscriber(Node):
             'type',
             1
         )
+        self.sendmsg = Serial()
+        self.sendmsg.type = 0
 
     def imageCallback(self,msg):
         cv_img = self.cvbridge.imgmsg_to_cv2(msg, "bgr8")
-        results = model.predict(cv_img,conf=0.35)
+        results = model.predict(cv_img,conf=0.5)
         res_plotted = results[0].plot()
         cv2.imshow("result", res_plotted)
         cv2.waitKey(1)
 
         xyxy = results[0].boxes.xyxy
         cls = results[0].boxes.cls
-        if len(xyxy) != 6:
-            return
         sum = torch.sum(cls)
-        print(sum)
-        if sum != 3:
-            return
-        cls=cls.reshape(len(cls),1)
-        x=xyxy[:,0:1]
-        # sorted = x.sort(0,False)[0]
-        indices = x.sort(0,False)[1]
-        c=torch.gather(cls, 0, indices)
-        print(c)
-        sendmsg = Serial()
-        sendmsg.object1 = int(c[0][0])
-        sendmsg.object2 = int(c[1][0])
-        sendmsg.object3 = int(c[2][0])
-        sendmsg.object4 = int(c[3][0])
-        sendmsg.object5 = int(c[4][0])
-        sendmsg.object6 = int(c[5][0])
-        type = int(c[0][0])*32+int(c[1][0])*16+int(c[2][0])*8+int(c[3][0])*4+int(c[4][0])*2+int(c[5][0])
-        sendmsg.type =  dic[type]
-        self.publisher_.publish(sendmsg)
+        if len(xyxy) == 6 and sum == 3:
+            cls=cls.reshape(len(cls),1)
+            x=xyxy[:,0:1]
+            indices = x.sort(0,False)[1]
+            c=torch.gather(cls, 0, indices)
+
+            self.sendmsg.object1 = int(c[0][0])
+            self.sendmsg.object2 = int(c[1][0])
+            self.sendmsg.object3 = int(c[2][0])
+            self.sendmsg.object4 = int(c[3][0])
+            self.sendmsg.object5 = int(c[4][0])
+            self.sendmsg.object6 = int(c[5][0])
+            type = int(c[0][0])*32+int(c[1][0])*16+int(c[2][0])*8+int(c[3][0])*4+int(c[4][0])*2+int(c[5][0])
+            if type > 7:
+                self.sendmsg.more = 0
+            else:
+                self.sendmsg.more = 1
+            self.sendmsg.type =  dic[type]
+        self.publisher_.publish(self.sendmsg)
 
 
 def main():
     rclpy.init()
     image_sub_ = ImageSubscriber()
     rclpy.spin(image_sub_)
-
     image_sub_.destroy_node()
     rclpy.shutdown()
-
-
 
 if __name__ == '__main__':
     main()
