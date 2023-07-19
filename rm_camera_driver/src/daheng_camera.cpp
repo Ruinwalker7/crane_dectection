@@ -82,9 +82,7 @@ DahengCameraNode::DahengCameraNode(const rclcpp::NodeOptions & options)
 
   node_clock = this->get_clock();
 
-  bool use_sensor_data_qos = this->declare_parameter("use_sensor_data_qos", true);
-  auto qos = use_sensor_data_qos ? rmw_qos_profile_sensor_data : rmw_qos_profile_default;
-  pub_ = image_transport::create_camera_publisher(this, "raw_img", qos);
+  pub_ = this->create_publisher<sensor_msgs::msg::Image>("raw_img", 1);
 
   // Check if camera is alive every 100ms.
   timer_ = this->create_wall_timer(
@@ -243,12 +241,13 @@ void GX_STDC DahengCameraNode::onFrameCallbackFun(GX_FRAME_CALLBACK_PARAM * pFra
     image_msg_.header.stamp = camera_info_.header.stamp = node_clock->now();
     memcpy(
       (unsigned char *)(&image_msg_.data[0]), m_pBufferRaw, image_msg_.step * image_msg_.height);
-    pub_.publish(image_msg_, camera_info_);
+    pub_->publish(image_msg_);
   }
 }
 
 // Define static members
-image_transport::CameraPublisher DahengCameraNode::pub_;
+
+rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr DahengCameraNode::pub_;
 sensor_msgs::msg::Image DahengCameraNode::image_msg_;
 sensor_msgs::msg::CameraInfo DahengCameraNode::camera_info_;
 GX_DEV_HANDLE DahengCameraNode::m_hDevice;

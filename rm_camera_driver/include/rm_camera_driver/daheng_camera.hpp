@@ -41,7 +41,7 @@ private:
   static void GX_STDC onFrameCallbackFun(GX_FRAME_CALLBACK_PARAM * pFrame);
   static rclcpp::Clock::SharedPtr node_clock;
   
-  static image_transport::CameraPublisher pub_;
+  static rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_;
   static sensor_msgs::msg::Image image_msg_;
   static sensor_msgs::msg::CameraInfo camera_info_;
   std::unique_ptr<camera_info_manager::CameraInfoManager> camera_info_manager_;
