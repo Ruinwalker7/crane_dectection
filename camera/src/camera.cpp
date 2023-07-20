@@ -18,7 +18,7 @@ public:
 
     // Check if camera is alive every 100ms.
     timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(10), std::bind(&ImagePublisher::timerCallback, this));
+        std::chrono::milliseconds(20), std::bind(&ImagePublisher::timerCallback, this));
   }
 
   void timerCallback()
@@ -37,8 +37,8 @@ public:
     image_msg_->header.stamp = node_clock->now();
     publisher_->publish(*image_msg_.get());
 
-    cv::imshow("camera", camera_img);
-    cv::waitKey(1);
+    // cv::imshow("camera", camera_img);
+    // cv::waitKey(1);
   }
 
   void open()

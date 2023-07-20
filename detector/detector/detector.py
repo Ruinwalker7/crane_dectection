@@ -8,8 +8,13 @@ from cv_bridge import CvBridge, CvBridgeError
 from std_msgs.msg import String
 import torch
 from interfaces.msg import Serial
+from ament_index_python.packages import get_package_share_directory
+# may raise PackageNotFoundError
 
-model = YOLO('/home/chen/Documents/crane_detection/detector/model/best.pt')
+package_share_directory = get_package_share_directory('detector')
+# print(package_share_directory)
+path = package_share_directory + '/best.pt'
+model = YOLO(path)
 
 dic={7:1,11:2,13:3,14:4,19:5,21:6,22:7,25:8,
        26:9,28:10,35:11,37:12,38:13,41:14,42:15,44:16,49:17,50:18,52:19,56:20}
@@ -36,7 +41,7 @@ class ImageSubscriber(Node):
         
     def imageCallback(self,msg):
         cv_img = self.cvbridge.imgmsg_to_cv2(msg, "bgr8")
-        results = model.predict(cv_img,conf=0.5)
+        results = model.predict(cv_img,conf=0.65)
         res_plotted = results[0].plot()
         cv2.imshow("result", res_plotted)
         cv2.waitKey(1)
@@ -57,11 +62,12 @@ class ImageSubscriber(Node):
             msg.object5 = int(c[4][0])
             msg.object6 = int(c[5][0])
             type = int(c[0][0])*32+int(c[1][0])*16+int(c[2][0])*8+int(c[3][0])*4+int(c[4][0])*2+int(c[5][0])
-            if type > 7:
+
+            msg.type =  dic[type]
+            if msg.type > 7:
                 msg.more = 0
             else:
                 msg.more = 1
-            msg.type =  dic[type]
         else:
             self.correctPics = 0
             
