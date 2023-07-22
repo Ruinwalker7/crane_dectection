@@ -63,23 +63,6 @@ DahengCameraNode::DahengCameraNode(const rclcpp::NodeOptions & options)
     RCLCPP_ERROR(this->get_logger(), "Unsupported pixel format!");
   }
 
-  camera_info_manager_ =
-    std::make_unique<camera_info_manager::CameraInfoManager>(this, camera_name_);
-
-  if (camera_info_manager_->validateURL(camera_info_url_)) {
-    camera_info_manager_->loadCameraInfo(camera_info_url_);
-    camera_info_ = camera_info_manager_->getCameraInfo();
-  } else {
-    camera_info_manager_->setCameraName(camera_name_);
-    sensor_msgs::msg::CameraInfo camera_info;
-    camera_info.width = image_msg_.width;
-    camera_info.height = image_msg_.height;
-    camera_info_manager_->setCameraInfo(camera_info);
-    RCLCPP_WARN(this->get_logger(), "Invalid camera info URL: %s", camera_info_url_.c_str());
-  }
-  camera_info_.header.frame_id = frame_id_;
-  camera_info_.header.stamp = this->now();
-
   node_clock = this->get_clock();
 
   pub_ = this->create_publisher<sensor_msgs::msg::Image>("raw_img", 1);
@@ -104,16 +87,10 @@ void DahengCameraNode::timerCallback()
     rclcpp::sleep_for(std::chrono::seconds(1));
   }
 
-  // watch dog
-  double dt = (this->now().seconds() - rclcpp::Time(camera_info_.header.stamp).seconds());
-  if (dt > 2.0) {
-    RCLCPP_ERROR(this->get_logger(), "Frame has been lost for %f seconds, restart!", dt);
-    this->close();
-    return;
-  }
   // set camera exposure
   int temp_exposure_time = this->get_parameter("exposure_time").as_int();
   double temp_gain = this->get_parameter("gain").as_double();
+  
   if (abs(temp_exposure_time - exposure_time_) > 0.5 || abs(temp_gain - gain_) > 0.05) {
     exposure_time_ = temp_exposure_time;
     gain_ = temp_gain;
@@ -183,11 +160,7 @@ bool DahengCameraNode::open()
   // 设置高度
   GXSetInt(m_hDevice, GX_INT_HEIGHT, resolution_height_);
 
-  // // 从中心裁剪
-  // int64_t nOffsetX = (MAX_RESOLUTION_WIDTH - resolution_width_) / 2;
-  // int64_t nOffsetY = (MAX_RESOLUTION_HEIGHT - resolution_height_) / 2;
-  //  GXSetEnum(m_hDevice, GX_ENUM_RREGION_SELECTOR,
-  //  GX_REGION_SELECTOR_REGION0);
+  // 从中心裁剪
   GXSetInt(m_hDevice, GX_INT_OFFSET_X, nOffsetX);
   GXSetInt(m_hDevice, GX_INT_OFFSET_Y, nOffsetY);
 
@@ -238,7 +211,7 @@ void GX_STDC DahengCameraNode::onFrameCallbackFun(GX_FRAME_CALLBACK_PARAM * pFra
       (void *)pFrame->pImgBuf, m_pBufferRaw, pFrame->nWidth, pFrame->nHeight, RAW2RGB_NEIGHBOUR,
       static_cast<DX_PIXEL_COLOR_FILTER>(m_nBayerType), false);
 
-    image_msg_.header.stamp = camera_info_.header.stamp = node_clock->now();
+    image_msg_.header.stamp = node_clock->now();
     memcpy(
       (unsigned char *)(&image_msg_.data[0]), m_pBufferRaw, image_msg_.step * image_msg_.height);
     pub_->publish(image_msg_);

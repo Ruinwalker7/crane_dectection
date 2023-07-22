@@ -31,7 +31,7 @@ class ImageSubscriber(Node):
         self.cvbridge = CvBridge()
         self.publisher_ = self.create_publisher(
             Serial,
-            'type',
+            'sendMsg',
             1
         )
         self.sendmsg = Serial()

@@ -176,7 +176,6 @@ bool FixedPacketTool<capacity>::recv_packet(FixedPacket<capacity> &packet) {
   }
 }
 
-using FixedPacketTool9 = FixedPacketTool<9>;
 using FixedPacketTool16 = FixedPacketTool<16>;
 using FixedPacketTool32 = FixedPacketTool<32>;
 using FixedPacketTool64 = FixedPacketTool<64>;

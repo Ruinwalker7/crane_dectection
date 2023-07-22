@@ -51,9 +51,9 @@ void SerialDriverNode::listenLoop()
     if (protocol_->receive(receive_data)) {
       serial_receive_data_pub_->publish(receive_data);
 
-      if (!initial_set_param_ || receive_data.ctrl != previous_receive_mode_) {
-        setMode(receive_data.ctrl);
-      }
+      // if (!initial_set_param_ || receive_data.ctrl != previous_receive_mode_) {
+      //   setMode(receive_data.ctrl);
+      // }
     } else {
       RCLCPP_WARN(
         get_logger(), "Failed to receive packet! error_message: %s",
@@ -62,6 +62,8 @@ void SerialDriverNode::listenLoop()
     }
   }
 }
+
+
 
 #include "rclcpp_components/register_node_macro.hpp"
 // Register the component with class_loader.
